@@ -106,7 +106,3 @@ As expected, prediction accuracy slightly decreases with longer forecast horizon
 2. **Temporal features** (month, season) are important predictors
 3. **Prediction error increases** with longer forecast horizons, which aligns with the chaotic nature of weather systems
 4. **Chronological train-test split** provides realistic evaluation of forecasting performance
-
-## Authors
-
-DMML Course Project
