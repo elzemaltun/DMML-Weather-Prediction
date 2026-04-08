@@ -1,129 +1,112 @@
-# Time Horizon Forecasting - Implementation Guide
+# Weather Prediction Using Machine Learning
 
-**"Test the prediction with respect to 3, 5, and 7 days of horizon"**
+A machine learning project for predicting daily maximum and minimum temperatures using historical weather data from Cesena, Italy (2015-2025).
 
+## Project Overview
 
+This project implements and compares multiple regression models to predict temperature, addressing two key tasks:
+1. **Same-day prediction**: Predicting temperature based on current weather conditions
+2. **Time horizon forecasting**: Predicting temperature 3, 5, and 7 days ahead
 
-### **Cell 21: Create Lagged Target Variables**
-- Creates 3 new target columns:
-  - `temp_3day_ahead` - Temperature 3 days in the future
-  - `temp_5day_ahead` - Temperature 5 days in the future
-  - `temp_7day_ahead` - Temperature 7 days in the future
-- Uses `.shift(-N)` to align current features with future temperatures
-- Shows examples of how forecasting works
+## Dataset
 
-### **Cell 22: Train Models for Each Horizon**
-- Trains **4 models** (LR, RF, SVR, MLP) for **each horizon** (3-day, 5-day, 7-day)
-- Total: **12 models** trained (4 models × 3 horizons)
-- Evaluates each with RMSE, MAE, and R² metrics
-- Prints comparison table for each horizon
+- **Source**: Open-Meteo API
+- **Location**: Cesena, Italy
+- **Period**: 2015-2025 (~4000 daily observations)
+- **Features**: Temperature, humidity, wind speed, pressure, precipitation, cloud cover, and more
 
-### **Cell 23: Compare Performance Across Horizons**
-- Creates visualization comparing 3-day vs 5-day vs 7-day forecasts
-- Shows how prediction error increases with longer horizons
-- Identifies best model for each horizon
-- Provides key insights
+## Project Structure
 
-### **Cell 24: Updated Summary**
-- Includes both same-time prediction AND horizon forecasting results
-- Shows complete project accomplishments
-
----
-
-## How It Works
-
-### **Data Transformation:**
-
-**Original Data:**
 ```
-Time          Temperature
-Jan 1, 00:00     5°C
-Jan 1, 06:00     6°C
-Jan 1, 12:00     8°C
-...
-Jan 4, 00:00    10°C  ← 3 days later (12 observations ahead)
+├── WeatherPredictionModel.ipynb    # Main Jupyter notebook
+├── open-meteo-cesena2015-2025.csv  # Dataset
+├── requirements.txt                 # Python dependencies
+└── README.md                        # Project documentation
 ```
 
-**After Transformation:**
-```
-Time          Current_Temp  Temp_3day_ahead
-Jan 1, 00:00     5°C            10°C
-Jan 1, 06:00     6°C            11°C
-...
-```
+## Methodology
 
-**Model learns:** "Given weather on Jan 1, predict temp on Jan 4"
+### 1. Data Understanding & Preprocessing
+- Loaded and explored the dataset
+- Aggregated hourly data to daily summaries
+- Created temporal features (year, month, day, season)
+- Handled data types and checked for missing values
 
----
+### 2. Exploratory Data Analysis
+- Temperature distribution analysis
+- Time series visualization
+- Seasonal pattern analysis
+- Correlation matrix for feature selection
 
-## Expected Results
+### 3. Feature Engineering & Selection
+- Removed highly correlated features to avoid multicollinearity
+- Selected 9 key features for modeling
+- Applied StandardScaler for feature normalization
 
-You should see a pattern like this:
+### 4. Model Training
+Four regression models were trained and tuned using GridSearchCV:
+- **Linear Regression** (baseline)
+- **Random Forest Regressor**
+- **Support Vector Regression (SVR)**
+- **MLP Neural Network**
 
-| Horizon | Best Model | Test RMSE | Test R² |
-|---------|-----------|-----------|---------|
-| 3-day   | MLP/RF    | ~3-4°C    | ~0.85   |
-| 5-day   | MLP/RF    | ~4-5°C    | ~0.75   |
-| 7-day   | MLP/RF    | ~5-6°C    | ~0.65   |
+### 5. Evaluation Metrics
+Models are evaluated using:
+- **RMSE** (Root Mean Squared Error) - primary metric
+- **MAE** (Mean Absolute Error)
+- **R²** (Coefficient of Determination)
 
-**Pattern:** Longer horizon = Higher error (this is normal and expected!)
+We chose RMSE as the primary metric because it penalizes larger errors more heavily, which is important in weather forecasting where large prediction errors are more costly. We use Test RMSE (not Train RMSE) for model selection to ensure we're measuring generalization performance on unseen data, avoiding overfitting.
 
----
+## Results
+
+### Same-Day Prediction
+Multi-output regression predicting both `temp_max` and `temp_min`:
+- Best performing model: **MLP Neural Network**
+- Training period: 2015-2022
+- Testing period: 2023-2025
+
+### Time Horizon Forecasting
+Separate models trained for 3-day, 5-day, and 7-day ahead predictions:
+
+| Horizon | Best Model | Avg Test RMSE | Avg Test R² |
+|---------|------------|---------------|-------------|
+| 3-day   | MLP        | ~3.0°C        | ~0.82       |
+| 5-day   | MLP        | ~3.0°C        | ~0.82       |
+| 7-day   | MLP        | ~3.1°C        | ~0.81       |
+
+As expected, prediction accuracy slightly decreases with longer forecast horizons due to increasing uncertainty in weather patterns.
 
 ## How to Run
 
-1. **Reload the notebook** in Jupyter (close and reopen)
-2. **Restart kernel**: Kernel → Restart & Clear Output
-3. **Run all cells**: Cell → Run All
+1. **Install dependencies**:
+   ```bash
+   pip install -r requirements.txt
+   ```
 
----
+2. **Open the notebook**:
+   ```bash
+   jupyter notebook WeatherPredictionModel.ipynb
+   ```
 
-## What This Proves
+3. **Run all cells**: Kernel → Restart & Run All
 
-Your models can now:
-- Predict temperature **3 days ahead** with ~3-4°C error
-- Predict temperature **5 days ahead** with ~4-5°C error
-- Predict temperature **7 days ahead** with ~5-6°C error
+## Requirements
 
-This is **realistic weather forecasting** - exactly what your professor asked for!
+- Python 3.8+
+- pandas
+- numpy
+- scikit-learn
+- matplotlib
+- seaborn
 
----
+## Key Findings
 
-## Key Concepts
+1. **MLP Neural Network** consistently outperforms other models for temperature prediction
+2. **Temporal features** (month, season) are important predictors
+3. **Prediction error increases** with longer forecast horizons, which aligns with the chaotic nature of weather systems
+4. **Chronological train-test split** provides realistic evaluation of forecasting performance
 
-### **Why Error Increases with Horizon?**
-- Weather is a chaotic system
-- Small changes compound over time
-- More uncertainty further into future
-- This is why 10-day forecasts are less accurate than 3-day forecasts!
+## Authors
 
-### **Why This is Different from Before?**
-- **Before:** Predict temp using same-time weather conditions
-- **Now:** Predict future temp using current weather conditions
-- **Before:** "What's the temp given these conditions?" (estimation)
-- **Now:** "What will the temp be in 3/5/7 days?" (forecasting)
-
----
-
-
-> "We implemented time horizon forecasting to predict temperature 3, 5, and 7 days ahead. 
-> Our best model (MLP/Random Forest) achieved:
-> - 3-day forecast: X.XX°C RMSE, X.XX R²
-> - 5-day forecast: X.XX°C RMSE, X.XX R²
-> - 7-day forecast: X.XX°C RMSE, X.XX R²
->
-> As expected, prediction accuracy decreases with longer forecast horizons due to 
-> increasing uncertainty in weather patterns."
-
----
-
-## Summary
-
-✅ **Requirement met:** 3, 5, and 7-day horizon forecasting implemented
-✅ **Models trained:** 12 total (4 models × 3 horizons)
-✅ **Evaluation:** Complete with RMSE, MAE, R² for each horizon
-✅ **Visualization:** Comparison charts showing performance across horizons
-✅ **Realistic:** Uses chronological split for honest evaluation
-
-
-# DMML-Weather-Prediction
+DMML Course Project
